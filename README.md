@@ -5,9 +5,9 @@
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### dirigete a vue
 ```
-npm run serve
+ cd ~/Descargas/grocery-vue-project-main
 ```
 
 ### Compiles and minifies for production
@@ -28,9 +28,9 @@ Vuejs---Vuetify-JS-How-to-create-a-Responsive-E-Grocery-Website-System-Grocery-e
 ```
 mvn clean install
 ```
-### Arrancar el agente
+### Arranca el proyecto
 ```
-mvn spring-boot:run
+npm run dev
 ```
 
 ### Customize configuration
