@@ -40,23 +40,11 @@
         Crear cuenta
       </v-btn>
 
-      <v-alert
-        v-if="errorMessage"
-        type="error"
-        class="mt-4"
-        dense
-        outlined
-      >
+      <v-alert v-if="errorMessage" type="error" class="mt-4" dense outlined>
         {{ errorMessage }}
       </v-alert>
 
-      <v-alert
-        v-if="successMessage"
-        type="success"
-        class="mt-4"
-        dense
-        outlined
-      >
+      <v-alert v-if="successMessage" type="success" class="mt-4" dense outlined>
         {{ successMessage }}
       </v-alert>
 
@@ -82,9 +70,7 @@
       <v-card class="pa-6 text-center" color="#e8f5e9" outlined>
         <v-icon size="64" color="green">mdi-check-circle</v-icon>
         <h2 class="mt-4">{{ dialogMessage }}</h2>
-        <v-btn color="green" class="mt-4" @click="dialog = false">
-          Cerrar
-        </v-btn>
+        <v-btn color="green" class="mt-4" @click="dialog = false">Cerrar</v-btn>
       </v-card>
     </v-dialog>
 
@@ -92,13 +78,14 @@
 </template>
 
 <script>
-import store from "@/store"; // Vuex store
+import store from "@/store"; 
 
 export default {
   data() {
     return {
-      // ⚠️ AQUÍ PEGA TU URL DE AZURE (La que termina en .azurewebsites.net)
-      urlBackend: "https://TU-BACKEND-AQUI.azurewebsites.net",
+      // ⚠️ ESTA ES LA URL DE TU BACKEND (APP SERVICE)
+      // Reemplázala con la que copiaste del Portal de Azure
+      urlBackend: "https://grocery-backend-marygca.azurewebsites.net",
 
       email: "",
       password: "",
@@ -123,18 +110,14 @@ export default {
       this.successMessage = "";
       this.loading = true;
 
-      if (!this.email || !this.password) {
-        this.errorMessage = "Ingresa correo y contraseña";
-        this.loading = false;
-        return;
-      }
-
       try {
-        // Usamos la URL que definiste arriba en data
         const res = await fetch(`${this.urlBackend}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: this.email.trim(), password: this.password.trim() })
+          body: JSON.stringify({ 
+            email: this.email.trim(), 
+            password: this.password.trim() 
+          })
         });
 
         const data = await res.json();
@@ -144,15 +127,16 @@ export default {
           return;
         }
 
+        // Guardar sesión
         store.dispatch("login", data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        this.successMessage = "Login correcto!";
+        this.successMessage = "¡Bienvenido!";
         setTimeout(() => this.redirectUser(data.user.rol), 500);
 
       } catch (err) {
         console.error(err);
-        this.errorMessage = "Error de conexión con el servidor de Azure";
+        this.errorMessage = "Servidor no disponible (Error de conexión)";
       } finally {
         this.loading = false;
       }
@@ -172,13 +156,9 @@ export default {
           body: JSON.stringify(this.nuevoUsuario)
         });
 
-        let data;
-        try { data = await res.json(); } catch { data = {}; }
+        const data = await res.json();
 
-        if (!res.ok) {
-          const msg = data.message || `Error creando usuario: ${res.status}`;
-          throw new Error(msg);
-        }
+        if (!res.ok) throw new Error(data.message || "Error al crear cuenta");
 
         this.dialogMessage = "👤 Usuario creado con éxito";
         this.dialog = true;
@@ -186,8 +166,7 @@ export default {
         this.nuevoUsuario = { nombre: "", email: "", password: "" };
 
       } catch (err) {
-        console.error(err);
-        this.dialogMessage = "❌ " + (err.message || "Error creando usuario");
+        this.dialogMessage = "❌ " + err.message;
         this.dialog = true;
       }
     }
