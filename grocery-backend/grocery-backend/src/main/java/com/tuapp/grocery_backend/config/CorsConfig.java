@@ -1,13 +1,3 @@
-package com.tuapp.grocery_backend.config;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.cors.CorsConfigurationSource;
-
-import java.util.List;
-
 @Configuration
 public class CorsConfig {
 
@@ -15,7 +5,14 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:8080"));
+        
+        // Aquí agregamos tu URL de Azure Static Web Apps y localhost para pruebas
+        config.setAllowedOrigins(List.of(
+            "https://calm-pond-088b02b1e.7.azurestaticapps.net",
+            "http://localhost:3000",
+            "http://localhost:8080"
+        )); 
+        
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
 
