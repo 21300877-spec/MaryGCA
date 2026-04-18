@@ -8,7 +8,6 @@
 
       <h2 class="mb-4 text-center">Inicio de sesión</h2>
 
-      <!-- Email -->
       <v-text-field
         v-model="email"
         label="Correo"
@@ -16,7 +15,6 @@
         dense
       />
 
-      <!-- Contraseña -->
       <v-text-field
         v-model="password"
         :type="showPassword ? 'text' : 'password'"
@@ -27,7 +25,6 @@
         dense
       />
 
-      <!-- Botón Login -->
       <v-btn
         color="green"
         block
@@ -39,12 +36,10 @@
         Entrar
       </v-btn>
 
-      <!-- Botón Registro -->
       <v-btn text color="green" @click="mostrarRegistro = true">
         Crear cuenta
       </v-btn>
 
-      <!-- Mensajes -->
       <v-alert
         v-if="errorMessage"
         type="error"
@@ -67,7 +62,6 @@
 
     </v-card>
 
-    <!-- Dialogo Registro -->
     <v-dialog v-model="mostrarRegistro" max-width="400">
       <v-card>
         <v-card-title>Crear Nueva Cuenta</v-card-title>
@@ -84,7 +78,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- ✅ MODAL IGUAL QUE VEGETABLES -->
     <v-dialog v-model="dialog" max-width="400">
       <v-card class="pa-6 text-center" color="#e8f5e9" outlined>
         <v-icon size="64" color="green">mdi-check-circle</v-icon>
@@ -104,6 +97,9 @@ import store from "@/store"; // Vuex store
 export default {
   data() {
     return {
+      // ⚠️ AQUÍ PEGA TU URL DE AZURE (La que termina en .azurewebsites.net)
+      urlBackend: "https://TU-BACKEND-AQUI.azurewebsites.net",
+
       email: "",
       password: "",
       showPassword: false,
@@ -112,60 +108,56 @@ export default {
       successMessage: "",
       mostrarRegistro: false,
       nuevoUsuario: { nombre: "", email: "", password: "" },
-
-      // ✅ NUEVO (modal tipo vegetables)
       dialog: false,
       dialogMessage: ""
     };
   },
   methods: {
-    // Redirige según rol
     redirectUser(rol) {
       if (rol === "admin") this.$router.push("/admin");
       else this.$router.push("/");
     },
 
-    // Login
     async login() {
-  this.errorMessage = "";
-  this.successMessage = "";
-  this.loading = true;
+      this.errorMessage = "";
+      this.successMessage = "";
+      this.loading = true;
 
-  if (!this.email || !this.password) {
-    this.errorMessage = "Ingresa correo y contraseña";
-    this.loading = false;
-    return;
-  }
+      if (!this.email || !this.password) {
+        this.errorMessage = "Ingresa correo y contraseña";
+        this.loading = false;
+        return;
+      }
 
-  try {
-    const res = await fetch("http://localhost:8081/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: this.email, password: this.password })
-    });
+      try {
+        // Usamos la URL que definiste arriba en data
+        const res = await fetch(`${this.urlBackend}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: this.email.trim(), password: this.password.trim() })
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (!res.ok) {
-      this.errorMessage = data.message || "Correo o contraseña incorrectos";
-      return;
-    }
+        if (!res.ok) {
+          this.errorMessage = data.message || "Correo o contraseña incorrectos";
+          return;
+        }
 
-    // ✅ AQUÍ ES DONDE VA (después del login correcto)
-    store.dispatch("login", data.user);
-    localStorage.setItem("user", JSON.stringify(data.user));
+        store.dispatch("login", data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
-    this.successMessage = "Login correcto!";
-    setTimeout(() => this.redirectUser(data.user.rol), 500);
+        this.successMessage = "Login correcto!";
+        setTimeout(() => this.redirectUser(data.user.rol), 500);
 
-  } catch (err) {
-    console.error(err);
-    this.errorMessage = "Error de conexión con el servidor";
-  } finally {
-    this.loading = false;
-  }
-},
-    // ✅ REGISTRO CON MODAL
+      } catch (err) {
+        console.error(err);
+        this.errorMessage = "Error de conexión con el servidor de Azure";
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async registrarUsuario() {
       if (!this.nuevoUsuario.nombre || !this.nuevoUsuario.email || !this.nuevoUsuario.password) {
         this.dialogMessage = "⚠️ Completa todos los campos";
@@ -174,28 +166,22 @@ export default {
       }
 
       try {
-        const res = await fetch("http://localhost:8081/auth/register", {
+        const res = await fetch(`${this.urlBackend}/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(this.nuevoUsuario)
         });
 
         let data;
-        try {
-          data = await res.json();
-        } catch {
-          data = {};
-        }
+        try { data = await res.json(); } catch { data = {}; }
 
         if (!res.ok) {
           const msg = data.message || `Error creando usuario: ${res.status}`;
           throw new Error(msg);
         }
 
-        // ✅ MENSAJE BONITO
         this.dialogMessage = "👤 Usuario creado con éxito";
         this.dialog = true;
-
         this.mostrarRegistro = false;
         this.nuevoUsuario = { nombre: "", email: "", password: "" };
 
@@ -217,7 +203,6 @@ export default {
   align-items: center;
   background: #e8f5e9;
 }
-
 .login-card {
   width: 100%;
   max-width: 400px;
@@ -225,18 +210,15 @@ export default {
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
-
 .logo-container {
   display: flex;
   justify-content: center;
   margin-bottom: 25px;
 }
-
 .logo {
   width: 140px;
   animation: float 3s ease-in-out infinite;
 }
-
 @keyframes float {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-12px); }
