@@ -8,7 +8,6 @@
 
       <h2 class="mb-4 text-center">Inicio de sesión</h2>
 
-      <!-- LOGIN EMAIL -->
       <v-text-field
         v-model="email"
         label="Correo"
@@ -16,7 +15,6 @@
         dense
       />
 
-      <!-- LOGIN PASSWORD -->
       <v-text-field
         v-model="password"
         :type="showPassword ? 'text' : 'password'"
@@ -27,7 +25,6 @@
         dense
       />
 
-      <!-- BOTÓN LOGIN -->
       <v-btn
         color="green"
         block
@@ -39,12 +36,10 @@
         Entrar
       </v-btn>
 
-      <!-- BOTÓN REGISTRO -->
       <v-btn text color="green" @click="mostrarRegistro = true">
         Crear cuenta
       </v-btn>
 
-      <!-- ALERTAS -->
       <v-alert
         v-if="errorMessage"
         type="error"
@@ -67,7 +62,6 @@
 
     </v-card>
 
-    <!-- REGISTRO -->
     <v-dialog v-model="mostrarRegistro" max-width="400">
       <v-card>
         <v-card-title>Crear Nueva Cuenta</v-card-title>
@@ -103,7 +97,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- MODAL -->
     <v-dialog v-model="dialog" max-width="400">
       <v-card class="pa-6 text-center" color="#e8f5e9" outlined>
         <v-icon size="64" color="green">mdi-check-circle</v-icon>
@@ -118,6 +111,9 @@
 </template>
 
 <script>
+// REEMPLAZA ESTA URL POR LA DE TU BACKEND EN AZURE (App Service)
+const API_URL = "https://tu-backend-en-azure.azurewebsites.net";
+
 export default {
   data() {
     return {
@@ -159,7 +155,8 @@ export default {
       }
 
       try {
-        const res = await fetch("http://localhost:8081/auth/login", {
+        // Usamos la variable API_URL en lugar de localhost
+        const res = await fetch(`${API_URL}/auth/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -178,7 +175,6 @@ export default {
         }
 
         localStorage.setItem("user", JSON.stringify(data.user));
-
         this.successMessage = "Login correcto";
 
         setTimeout(() => {
@@ -187,7 +183,7 @@ export default {
 
       } catch (err) {
         console.error(err);
-        this.errorMessage = "Error de conexión con servidor";
+        this.errorMessage = "Error de conexión con el servidor de Azure";
       } finally {
         this.loading = false;
       }
@@ -205,7 +201,8 @@ export default {
       }
 
       try {
-        const res = await fetch("http://localhost:8081/auth/register", {
+        // Usamos la variable API_URL en lugar de localhost
+        const res = await fetch(`${API_URL}/auth/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -216,12 +213,11 @@ export default {
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.message);
+          throw new Error(data.message || "Error al registrar");
         }
 
         this.dialogMessage = "👤 Usuario creado con éxito";
         this.dialog = true;
-
         this.mostrarRegistro = false;
 
         this.nuevoUsuario = {
